@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PTO Request App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+    }
+    .date-range {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .date-range input {
+      width: 48%;
+      padding: 5px;
+    }
+    button {
+      padding: 10px 15px;
+      margin-top: 15px;
+      cursor: pointer;
+    }
+    #date-list {
+      margin: 20px 0;
+      font-size: 1rem;
+    }
+    .mailto-link {
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>PTO Request App</h1>
+    <div id="ranges-container">
+      <!-- Dynamic date range inputs go here -->
+      <div class="date-range">
+        <input type="date" class="start-date" placeholder="Start Date">
+        <input type="date" class="end-date" placeholder="End Date">
+      </div>
+    </div>
+    <button id="add-range">Add Another Date Range</button>
+    <button id="generate-dates">Generate PTO Dates</button>
+    <div id="date-list"></div>
+    <a id="mailto-link" class="mailto-link" href="#" target="_blank">Send PTO Request Email</a>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const rangesContainer = document.getElementById('ranges-container');
+      const addRangeButton = document.getElementById('add-range');
+      const generateDatesButton = document.getElementById('generate-dates');
+      const dateListContainer = document.getElementById('date-list');
+      const mailtoLink = document.getElementById('mailto-link');
+
+      // Adds a new date range input
+      const addDateRange = () => {
+        const div = document.createElement('div');
+        div.classList.add('date-range');
+        div.innerHTML = `
+          <input type="date" class="start-date" placeholder="Start Date">
+          <input type="date" class="end-date" placeholder="End Date">
+        `;
+        rangesContainer.appendChild(div);
+      };
+
+      // Generates a list of discrete dates from all ranges
+      const generateDates = () => {
+        const dateInputs = document.querySelectorAll('.date-range');
+        let dates = new Set();
+
+        dateInputs.forEach(range => {
+          const startDateInput = range.querySelector('.start-date');
+          const endDateInput = range.querySelector('.end-date');
+
+          const startDate = new Date(startDateInput.value);
+          const endDate = new Date(endDateInput.value);
+
+          if (startDate && endDate && !isNaN(startDate) && !isNaN(endDate)) {
+            let currentDate = new Date(startDate);
+            while (currentDate <= endDate) {
+              dates.add(currentDate.toISOString().split('T')[0]);
+              currentDate.setDate(currentDate.getDate() + 1);
+            }
+          }
+        });
+
+        dates = Array.from(dates).sort(); // Sort the dates
+        updateDateList(dates);
+        generateMailtoLink(dates);
+      };
+
+      // Updates the displayed list of dates
+      const updateDateList = (dates) => {
+        if (dates.length === 0) {
+          dateListContainer.textContent = "No dates selected.";
+        } else {
+          dateListContainer.innerHTML = `
+            <strong>Selected PTO Dates:</strong><br>
+            ${dates.join(', ')}
+          `;
+        }
+      };
+
+      // Generates the mailto link
+      const generateMailtoLink = (dates) => {
+        const managerEmail = "manager@example.com"; // Change this to your manager's email
+        const subject = "PTO Request";
+        const body = `Dear Manager,%0D%0A%0D%0AI am requesting PTO for the following dates:%0D%0A${dates.join(
+          '%0D%0A'
+        )}%0D%0A%0D%0AThank you,%0D%0A[Your Name]`;
+        mailtoLink.href = `mailto:${managerEmail}?subject=${encodeURIComponent(
+          subject
+        )}&body=${body}`;
+        mailtoLink.textContent = "Send PTO Request Email";
+      };
+
+      // Event listeners
+      addRangeButton.addEventListener('click', addDateRange);
+      generateDatesButton.addEventListener('click', generateDates);
+    });
+  </script>
+</body>
+</html>
